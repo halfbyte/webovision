@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WEBOVISION</title>
+    <style media="screen">
+      button {
+        font-size: 10em;
+        color: yellow;
+        background-color: red;
+        width: 100%;
+      }
+    </style>
+    <script type="text/javascript">
+      function note2f(note) {
+        return Math.pow(2, ((note - 69) / 12)) * 440
+      }
+
+      var ATTACK = 0.04;
+      var DECAY = 0.05;
+      var SUSTAIN = 0.7;
+      var RELEASE = 0.05;
+      var PROGRAMS = {
+        0: {
+
+        },
+        40: {
+          osc_type: 'sawtooth',
+          amp_correct: 0.8,
+          lfo_depth: 30,
+          lfo_frequency: 10
+        },
+        41: {
+          osc_type: 'square',
+          amp_correct: 1,
+          lfo_depth: 25,
+          lfo_frequency: 7
+        },
+        42: {
+          osc_type: 'triangle',
+          amp_correct: 1.8,
+          lfo_depth: 10,
+          lfo_frequency: 3
+        }
+      };
+
+      function webovision() {
+        var numNotes = 0;
+        var maxNotes = 0;
+        function play(music) {
+
+          function Note(ctx, dest, time, note, velo, program) {
+            var osc = ctx.createOscillator();
+            var lfo = ctx.createOscillator();
+            var lfoAmp = ctx.createGain();
+            lfoAmp.gain.value = program['lfo_depth'] || 0;
+            lfo.frequency.value = program['lfo_frequency'] || 10;
+            lfo.connect(lfoAmp);
+            lfoAmp.connect(osc.detune);
+            var amp = ctx.createGain();
+            osc.type = program['osc_type'] || 'sine';
+            osc.frequency.value = note2f(note);
+            osc.start(time);
+            lfo.start(time);
+            var maxGain = (velo / 127) * (program['amp_correct'] || 1.0);
+            amp.gain.setValueAtTime(0, time);
+            amp.gain.linearRampToValueAtTime(maxGain, time + ATTACK);
+            amp.gain.linearRampToValueAtTime(maxGain * SUSTAIN, time + ATTACK + DECAY);
+            numNotes++;
+            //osc.stop(time + 0.02);
+            osc.connect(amp);
+            amp.connect(dest);
+            this.stop = function(time) {
+              amp.gain.setValueAtTime(maxGain * SUSTAIN, time);
+              amp.gain.linearRampToValueAtTime(0, time + RELEASE);
+              osc.stop(time + RELEASE + 0.01);
+              lfo.stop(time + RELEASE + 0.01);
+              numNotes--;
+            }
+
+            return this;
+          }
+
+          function Channel(ctx) {
+            var channelAmp = ctx.createGain();
+            var channelPanner = ctx.createStereoPanner();
+            var program = 0
+            var ampCorrect = 0.1;
+            channelAmp.gain.value = ampCorrect;
+
+            var playing = {};
+            this.play = function(time, note, velocity) {
+              playing[note] = new Note(ctx, channelAmp, time,  note, velocity, PROGRAMS[program]||{});
+            }
+            this.stop = function(time, note) {
+              if (playing[note]) playing[note].stop(time);
+            }
+            this.setVolume = function(time, volume) {
+              console.log("setVolume(" + volume + ")", ampCorrect * (volume / 127.0), time)
+              channelAmp.gain.setValueAtTime(time, ampCorrect * (volume / 127.0));
+            }
+
+            this.programChange = function(progNum) {
+              console.log("programChange", progNum);
+              program = progNum;
+            }
+            this.setPan = function(time, panValue) {
+              var pannerValue = (panValue - 64) / 64;
+              channelPanner.pan.setValueAtTime(pannerValue, time);
+            }
+
+            channelAmp.connect(channelPanner);
+            channelPanner.connect(ctx.destination);
+            return this;
+          }
+          var ctx = new AudioContext()
+          channels = []
+
+          var p2t = function(p) {
+            return (p / music.ppqn / music.bpm) * 60.0;
+          };
+
+          var disabledChannels = []; //[0,1,2,3];
+
+          var startTime = ctx.currentTime;
+
+          music.tracks.forEach(function(track) {
+            track.events.forEach(function(event) {
+              if (event[0] == 'noteon') {
+                var channel = event[2]
+                if (!channels[channel]) {
+                  channels[channel] = new Channel(ctx);
+                }
+                if(disabledChannels.indexOf(channel) == -1)
+                  channels[channel].play(startTime + p2t(event[1]), event[3], event[4])
+              } else if (event[0] == 'noteoff') {
+                var channel = event[2]
+                if (!channels[channel]) {
+                  channels[channel] = new Channel(ctx);
+                }
+                if(disabledChannels.indexOf(channel) == -1)
+                  channels[channel].stop(startTime + p2t(event[1]), event[3])
+              } else if (event[0] == 'progchange') {
+                var channel = event[2]
+                if (!channels[channel]) {
+                  channels[channel] = new Channel(ctx);
+                }
+                channels[channel].programChange(event[3])
+              } else if (event[0] == 'controller') {
+                var channel = event[2]
+                if (!channels[channel]) {
+                  channels[channel] = new Channel(ctx);
+                }
+                if (event[3] == 7) {
+                  channels[channel].setVolume(startTime + p2t(event[1]), event[4])
+                } else if (event[3] == 10) {
+                  console.log("panChannel", channel, event[4]);
+                  channels[channel].setPan(startTime + p2t(event[1]), event[4])
+                } else {
+                  console.log(event)
+                }
+              }
+              maxNotes = Math.max(numNotes, maxNotes);
+            })
+
+          });
+          console.log("scheduled. max notes at same time", maxNotes);
+        }
+
+        function loaded () {
+          music = JSON.parse(oReq.responseText);
+          play(music);
+        }
+
+        var url = "webovision.json";
+
+        var oReq = new XMLHttpRequest();
+        oReq.addEventListener('load', loaded);
+        oReq.open("get", url, true);
+        oReq.send();
+      }
+    </script>
+  </head>
+  <body>
+    <button onclick="webovision()">WEBOVISION!!!</button>
+  </body>
+</html>
