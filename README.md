@@ -1,6 +1,6 @@
 # The WebOVision Theme for JSConf.eu 2015
 
-[Listen to it (Will not work in Safari, unfortunately)](http://pixelpoke.de/webovision).
+[Listen to it (Will not work in Safari, unfortunately, see [below](#on-browser-compatibitly))](http://pixelpoke.de/webovision).
 
 So, one day on twitter, Malte Ubl of JSConf.eu fame asks if someone could create a
 short 8Bit style piece of music. As I have a reputation to keep in terms of making
