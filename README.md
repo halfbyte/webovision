@@ -5,7 +5,7 @@
 So, one day on twitter, Malte Ubl of JSConf.eu fame asks if someone could create a
 short 8Bit style piece of music. As I have a reputation to keep in terms of making
 music for or at JSConf.eu, I directly asked him what he wanted and he pointed
-me to a recording of the prelude to Te Deum by Marc-Antoine Charpentier, better
+me to a recording of the prelude to "Te Deum" by Marc-Antoine Charpentier -- better
 known as the Eurovision Theme, being used as an intro to TV shows done for the
 Eurovision, a European organisation created to exchange TV programs between European
 TV stations. To me personally, as for many Germans from my generations, this is almost
