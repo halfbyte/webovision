@@ -1,4 +1,4 @@
-# The WebOVision Theme
+# The WebOVision Theme for JSConf.eu 2015
 
 [Listen to it (Will not work in Safari, unfortunately)](http://pixelpoke.de/webovision).
 
@@ -14,13 +14,13 @@ back in the days. Let me quote "Generation Golf", a popular coming of age novel 
 
 > Mir geht es gut. Ich sitze in der warmen Badewanne, und zwischen meinen Knien schwimmt das braune Seeräuberschiff von Playmobil. Nachher schaue ich 'Wetten, daß.?' mit Frank Elstner, dazu gibt es Erdnußflips. Niemals wieder hatte ich in späteren Jahren solch ein sicheres Gefühl, zu einem bestimmten Zeitpunkt genau das Richtige zu tun.
 
-> I'm fine. I'm sitting in the warm bath tubm and swimming between my knees is the brown pirate ship by Playmobil. Later, I'll be watching 'Wetten, daß.?' with Frank Elstner, and we'll eat peanut flips. Never again later in my life did I feel so safely to do exactly the right thing at the right moment.
+Crappy translation by me:
 
-(Crappy translation is mine)
+> I'm fine. I'm sitting in the warm bath tub and I have the brown pirate ship of Playmobil swimming between my knees. Later tonight, I'll be watching 'Wetten, daß.?' with Frank Elstner, and we'll have peanut flips with that. Never again later in my life did I feel so sure to do exactly the right thing at the right moment.
 
 Of course I could have just loaded a MIDI file into GarageBand or whatever and use some cheap synth sounds to generate the 8Bit version. But that would have been cheating in my eyes, this being JSConf.eu. So here's the code to a Web Audio based version. Again,  you can find the final result at [The Web](http://pixelpoke.de/webovision).
 
-# How it's done
+## How it's done
 
 Firs of all: I'm sorry, I used ruby. But it's my favourite language and it was done in a bit of a hurry.
 
